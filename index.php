@@ -40,6 +40,16 @@ $tasks = [
         'is_done' => false
     ]
 ];
+function task_count($tasks, $project)
+{
+    $quantity = 0;
+    foreach ($tasks as $key => $task) {
+        if ($task['category'] === $project) {
+            $quantity++;
+        }
+    }
+    return $quantity;
+}
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -84,7 +94,7 @@ $tasks = [
                         <?php foreach ($projects as $project): ?>
                         <li class="main-navigation__list-item">
                             <a class="main-navigation__list-item-link" href="#"><?=$project;?></a>
-                            <span class="main-navigation__list-item-count">0</span>
+                            <span class="main-navigation__list-item-count"><?=task_count($tasks, $project);?></span>
                         </li>
                     <?php endforeach; ?>
                     </ul>
