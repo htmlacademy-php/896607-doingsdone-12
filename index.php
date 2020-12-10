@@ -1,5 +1,4 @@
 <?php
-// показывать или нет выполненные задачи
 $show_complete_tasks = rand(0, 1);
 $title = 'Дела в порядке';
 $username = 'Константин';
@@ -51,6 +50,15 @@ function task_count($tasks, $project)
         }
     }
     return $quantity;
+}
+function task_urgency($task)
+{
+    if ($task['date']) {
+        $cur_date = date_create('now');
+        $deadline_date = date_create($task['date']);
+        if ($deadline_date <= $cur_date) {return true;}
+    }
+    return false;
 }
 
 require('helpers.php');
