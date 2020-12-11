@@ -34,7 +34,6 @@
                     </nav>
 
                     <label class="checkbox">
-                        <!--добавить сюда атрибут "checked", если переменная $show_complete_tasks равна единице-->
                         <input class="checkbox__input visually-hidden show_completed" type="checkbox" <?php if ($show_complete_tasks === 1): ?>checked <?php endif; ?>>
                         <span class="checkbox__text">Показывать выполненные</span>
                     </label>
@@ -43,7 +42,7 @@
                 <table class="tasks">
                     <?php foreach ($tasks as $key => $task): ?>
                         <?php if ($show_complete_tasks === 0 && $task['is_done']) {continue;} ?>
-                        <tr class="tasks__item task <?php if ($task['is_done']): ?> task--completed <?php endif; ?>">
+                        <tr class="tasks__item task <?php if ($task['is_done']): ?> task--completed<?php endif; ?> <?php if (task_urgency($task)): ?> task--important <?php endif; ?>">
                             <td class="task__select">
                                 <label class="checkbox task__checkbox">
                                     <input class="checkbox__input visually-hidden" type="checkbox" <?php if ($task['is_done']): ?>checked <?php endif; ?>>
