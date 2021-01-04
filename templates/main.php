@@ -4,9 +4,9 @@
                 <nav class="main-navigation">
                     <ul class="main-navigation__list">
                         <?php foreach ($projects as $project): ?>
-                        <li class="main-navigation__list-item">
-                            <a class="main-navigation__list-item-link" href="#"><?=htmlspecialchars($project['title']);?></a>
-                            <span class="main-navigation__list-item-count"><?=task_count($tasks, $project['title']);?></span>
+                        <li class="main-navigation__list-item <?php if ($category === $project['id']): ?>main-navigation__list-item--active<?php endif; ?>">
+                            <a class="main-navigation__list-item-link" href="index.php?category=<?=$project['id'];?>"><?=htmlspecialchars($project['title']);?></a>
+                            <span class="main-navigation__list-item-count"><?= (int) $project['task_count'];?></span>
                         </li>
                     <?php endforeach; ?>
                     </ul>
@@ -40,6 +40,7 @@
                 </div>
 
                 <table class="tasks">
+                <?php if ($tasks): ?>
                     <?php foreach ($tasks as $key => $task): ?>
                         <?php if ($show_complete_tasks === 0 && $task['is_done']) {continue;} ?>
                         <tr class="tasks__item task <?php if ($task['is_done']): ?> task--completed<?php endif; ?> <?php if (task_urgency($task)): ?> task--important <?php endif; ?>">
@@ -53,5 +54,6 @@
                             <td class="task__controls"></td>
                         </tr>
                     <?php endforeach; ?>
+                <?php endif; ?>
                 </table>
             </main>
