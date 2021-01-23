@@ -10,19 +10,11 @@ $checking_result = 0;
 /* выбираем первого пользователя для примера */
 $user_id = 1;
 
-/* определяем выбранный проект */
-if (isset($_GET['category'])) {
-    $category = $_GET['category'];
-} else {
-    $category = '';
-}
-
 function return_error($error_code) {
     http_response_code($error_code);
 }
 
-function task_urgency($task)
-{
+function task_urgency($task) {
     if ($task['deadline']) {
         $cur_date = date_create('now');
         $deadline_date = date_create($task['deadline']);
@@ -31,8 +23,29 @@ function task_urgency($task)
     return false;
 }
 
+function checking_id_in_projects($connect, $id_number, $user_id) {
+    if (preg_match('/\d{1,}$/', $id_number)) {
+        $sql_id_checking = "SELECT id FROM projects WHERE id = '$id_number' AND user_id = '$user_id'";
+        $search_result = mysqli_query($connect, $sql_id_checking);
+        return mysqli_num_rows($search_result) > 0;
+    }
+    return false;
+}
+
+/* определяем выбранный проект */
+if (isset($_GET['category'])) {
+    $category = $_GET['category'];
+} else {
+    $category = '';
+}
+
 /* получаем данные из базы */
-$con = mysqli_connect('localhost', 'root', 'root','doingsdone');
+if (!isset($db)) {
+    $db = require_once('config/db.php');
+}
+
+$con = mysqli_connect($db['host'], $db['user'], $db['password'], $db['database']);
+
 if ($con) {
     mysqli_set_charset($con, 'utf8');
 /* перезаписываем имя пользователя */
@@ -51,37 +64,33 @@ if ($con) {
                       WHERE p.user_id = '$user_id'";
     $result = mysqli_query($con, $sql_projects);
     $projects = mysqli_fetch_all($result, MYSQLI_ASSOC);
-/* перезаписываем задачи пользователя */
-    $sql_tasks = "SELECT t.title, DATE_FORMAT(deadline, '%d.%m.%Y') AS deadline, p.title AS category, is_done FROM tasks t JOIN projects p ON t.project_id = p.id AND t.user_id = '$user_id'";
-/* проверяем наличие и действительность парамента запроса номера проекта */
+/* перезаписываем задачи пользователя с учетом параметра запроса */
+    $sql_tasks = "SELECT t.title, DATE_FORMAT(deadline, '%d.%m.%Y') AS deadline, p.title AS category, is_done, file_url, file_name FROM tasks t JOIN projects p ON t.project_id = p.id AND t.user_id = '$user_id'";
     if ($category) {
-        if (preg_match('/\d{1,}$/', $category)) {
-            $sql_project_checking = "SELECT id FROM projects WHERE id = '$category'";
-            $checking_result = mysqli_query($con, $sql_project_checking);
-            if (mysqli_num_rows($checking_result) > 0) {
-                $sql_tasks = $sql_tasks . " AND t.project_id = $category";
-                $checking_result = 1;
-            } else {
-                $checking_result = 0;
-            }
-        } else {
-            $checking_result = 0;
-        }
-    } else {
-        $checking_result = 1;
-    }
+       $checking_result = checking_id_in_projects($con, $category, $user_id);
+       if ($checking_result) {
+          $sql_tasks = $sql_tasks . " AND t.project_id = $category";
+       }
+    } else $checking_result = 1;
     $result = mysqli_query($con, $sql_tasks);
     $tasks = mysqli_fetch_all($result, MYSQLI_ASSOC);
+
 /* создаем страницу, если в запросе не задан несуществующий проект */
     if ($checking_result) {
-        require('helpers.php');
+        require_once('helpers.php');
 
-        $content = include_template('main.php', ['projects' => $projects, 'tasks' => $tasks, 'show_complete_tasks' => $show_complete_tasks, 'category' => $category]);
-        $page = include_template('layout.php', ['title' => $title, 'username' => $username, 'content' => $content]);
+        if (!isset($content)) {
+            $content = include_template('main.php', ['tasks' => $tasks, 'show_complete_tasks' => $show_complete_tasks]);
+        }
+
+        $navigation = include_template('navigation.php', ['projects' => $projects, 'category' => $category]);
+
+        $page = include_template('layout.php', ['title' => $title, 'username' => $username, 'content' => $content, 'navigation' => $navigation]);
 
         print($page);
     } else {
         return_error(404);
     }
 }
+
 ?>

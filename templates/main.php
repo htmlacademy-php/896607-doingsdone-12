@@ -1,21 +1,3 @@
-            <section class="content__side">
-                <h2 class="content__side-heading">Проекты</h2>
-
-                <nav class="main-navigation">
-                    <ul class="main-navigation__list">
-                        <?php foreach ($projects as $project): ?>
-                        <li class="main-navigation__list-item <?php if ($category === $project['id']): ?>main-navigation__list-item--active<?php endif; ?>">
-                            <a class="main-navigation__list-item-link" href="index.php?category=<?=$project['id'];?>"><?=htmlspecialchars($project['title']);?></a>
-                            <span class="main-navigation__list-item-count"><?= (int) $project['task_count'];?></span>
-                        </li>
-                    <?php endforeach; ?>
-                    </ul>
-                </nav>
-
-                <a class="button button--transparent button--plus content__side-button"
-                   href="pages/form-project.html" target="project_add">Добавить проект</a>
-            </section>
-
             <main class="content__main">
                 <h2 class="content__main-heading">Список задач</h2>
 
@@ -49,6 +31,9 @@
                                     <input class="checkbox__input visually-hidden" type="checkbox" <?php if ($task['is_done']): ?>checked <?php endif; ?>>
                                     <span class="checkbox__text"><?=htmlspecialchars($task['title'])?></span>
                                 </label>
+                            </td>
+                            <td class="task__file">
+                                <?php if ($task['file_url']): ?><a class="download-link" href="<?=$task['file_url']?>"><?=$task['file_name']?></a><?php endif; ?>
                             </td>
                             <td class="task__date"><?=htmlspecialchars($task['deadline'])?></td>
                             <td class="task__controls"></td>

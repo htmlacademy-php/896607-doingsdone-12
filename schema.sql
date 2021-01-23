@@ -17,7 +17,8 @@ CREATE TABLE tasks (
   date_add TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   is_done TINYINT DEFAULT 0,
   title CHAR(255) NOT NULL,
-  url_file CHAR(255),
+  file_url CHAR(255),
+  file_name CHAR(255),
   deadline TIMESTAMP,
   user_id INT NOT NULL,
   project_id INT
