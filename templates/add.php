@@ -16,7 +16,7 @@
 
       <select class="form__input form__input--select <?php if (isset($errors['project'])): ?> form__input--error<?php endif; ?>" name="project" id="project">
         <?php foreach ($categories as $key => $category): ?>
-          <option value="<?=$category['id'];?>"><?=$category['title'];?></option>
+          <option value="<?=$category['id'];?>" <?php if (isset($task['project']) && $task['project'] === $category['id']): ?>selected<?php endif; ?>><?=$category['title'];?></option>
         <?php endforeach; ?>
       </select>
       <?php if (isset($errors['project'])): ?>
@@ -46,10 +46,10 @@
     </div>
 
     <div class="form__row form__row--controls">
+      <?php if(isset($errors)): ?>
+        <p class="error-message">Пожалуйста, исправьте ошибки в форме</p>
+      <?php endif; ?>
       <input class="button" type="submit" name="" value="Добавить">
     </div>
   </form>
-<!--
-  В ТЗ: "Если по итогам выполнения процесса отправки возникли ошибки заполнения формы, то эти ошибки должны быть показаны красным текстом под необходимыми полями, а под самой формой появится сообщение «Пожалуйста, исправьте ошибки в форме»."
-  В задании сообщение под формой не упоминается - если не будет позже, добавить? -->
 </main>

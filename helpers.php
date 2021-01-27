@@ -142,3 +142,81 @@ function include_template($name, array $data = []) {
 
     return $result;
 }
+
+/* ДОБАВЛЕННЫЕ ФУНКЦИИ */
+
+/* для отображения задач */
+/* возвращаем ошибку */
+function return_error($error_code) {
+    http_response_code($error_code);
+}
+
+/* определяем срочность задачи */
+function task_urgency($task) {
+    if ($task['deadline']) {
+        $cur_date = date_create('now');
+        $deadline_date = date_create($task['deadline']);
+        if ($deadline_date <= $cur_date) {return true;}
+    }
+    return false;
+}
+
+/* проверяем наличие выбранного проекта из параметров запроса */
+function checking_id_in_projects($connect, $id_number, $user_id) {
+    if (preg_match('/\d{1,}$/', $id_number)) {
+        $sql_id_checking = "SELECT id FROM projects WHERE id = $id_number AND user_id = $user_id";
+        $search_result = mysqli_query($connect, $sql_id_checking);
+        return mysqli_num_rows($search_result) > 0;
+    }
+    return false;
+}
+
+/* проверяем уникальность значения в заданном столбце таблицы */
+function checking_uniqe_value($connect, $table, $column, $value, $conditions) {
+    $sql_values = "SELECT * FROM $table WHERE $column = '" . $value . "'";
+    if ($conditions) {
+        $sql_values = $sql_values . " AND $conditions";
+    }
+
+    $search_result = mysqli_query($connect, $sql_values);
+
+    return mysqli_num_rows($search_result) < 1;
+}
+
+/* для добавления задачи */
+/* проверяем валидность даты выполнения задачи */
+function checking_date($date) {
+    if (!$date) {
+        return NULL;
+    }
+    $cur_date = date_create('now');
+    $deadline_date = date_create($date);
+    if (is_date_valid($date) && $cur_date <= $deadline_date) {
+        return NULL;
+    }
+    return 'Дата указывается в формате ГГГГ-ММ-ДД и не может быть позже текущей даты';
+}
+
+/* проверяем наличие выбранного проекта при добавлении задачи */
+function checking_project($number, $projects) {
+    if (in_array($number, array_column($projects,'id'))) {
+        return NULL;
+    };
+    return 'Не найдено указанного проекта';
+}
+
+/* для регистрации пользователя */
+/* проверяем валидность email */
+function checking_email($email, $connect) {
+    if (!$email) {
+        return NULL;
+    }
+    /* далее проверяем, что он мейл и что уникальный */
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        return 'E-mail введен некорректно';
+    }
+    if (!checking_uniqe_value($connect, 'users', 'email', $email, '')) {
+        return 'Пользователь с таким e-mail уже зарегистрирован';
+    }
+    return NULL;
+}
