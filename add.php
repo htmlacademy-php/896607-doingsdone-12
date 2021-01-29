@@ -3,25 +3,6 @@ $categories = [];
 
 require_once('helpers.php');
 
-function checking_date($date) {
-    if (!$date) {
-        return NULL;
-    }
-    $cur_date = date_create('now');
-    $deadline_date = date_create($date);
-    if (is_date_valid($date) && $cur_date <= $deadline_date) {
-        return NULL;
-    }
-    return 'Дата указывается в формате ГГГГ-ММ-ДД и не может быть позже текущей даты';
-}
-
-function checking_project($number, $projects) {
-    if (in_array($number, array_column($projects,'id'))) {
-        return NULL;
-    };
-    return 'Не найдено указанного проекта';
-}
-
 /* пользователь №1 для примера */
 if (!isset($user_id)) {
     $user_id = 1;
@@ -38,14 +19,14 @@ if ($con) {
     mysqli_set_charset($con, 'utf8');
 
 /* получаем список категорий */
-    $sql_categories = "SELECT title, id FROM projects WHERE user_id = '$user_id'";
+    $sql_categories = "SELECT title, id FROM projects WHERE user_id = $user_id";
     $result = mysqli_query($con, $sql_categories);
     $categories = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
 /* создаем форму */
     $content = include_template('add.php', ['categories' => $categories]);
 
-/* сохраняем новые данные в таблицу */
+/* при попытке отправки формы */
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 /* валидация полученных данных */
         $required = ['name', 'project'];
@@ -99,8 +80,10 @@ if ($con) {
             $content = include_template('add.php', ['task' => $task, 'errors' => $errors, 'categories' => $categories]);
         }
     }
+/* временно, пока не сделали нормальный вход на сайт */
+    $is_user = true;
 
-    print(include_template('../index.php', ['db' => $db,'content' => $content]));
+    print(include_template('../index.php', ['db' => $db,'content' => $content, 'is_user' => $is_user]));
 
 }
 ?>
