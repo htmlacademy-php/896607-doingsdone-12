@@ -207,7 +207,7 @@ function checking_project($number, $projects) {
 
 /* для регистрации пользователя */
 /* проверяем валидность email */
-function checking_email($email, $connect) {
+function checking_email($email, $connect, $is_uniqe) {
     if (!$email) {
         return NULL;
     }
@@ -215,8 +215,17 @@ function checking_email($email, $connect) {
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         return 'E-mail введен некорректно';
     }
-    if (!checking_uniqe_value($connect, 'users', 'email', $email, '')) {
-        return 'Пользователь с таким e-mail уже зарегистрирован';
+    if ($is_uniqe) {
+        if (!checking_uniqe_value($connect, 'users', 'email', $email, '')) {
+            return 'Пользователь с таким e-mail уже зарегистрирован';
+        }
     }
     return NULL;
+}
+
+/* получаем из базы данные о текущем пользователе */
+function get_user($email, $connect) {
+    $sql_user_search = "SELECT * FROM users WHERE email = '$email'";
+    $search_result = mysqli_query($connect, $sql_user_search);
+    return mysqli_fetch_assoc($search_result);
 }

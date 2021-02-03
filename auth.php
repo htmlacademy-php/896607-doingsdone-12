@@ -1,12 +1,17 @@
 <?php
 require_once('helpers.php');
 
-session_start();
+if(session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
 if (isset($_SESSION['user'])) {
     header('Location: index.php');
 } else {
     $user = [];
 }
+
+$form_error_message = 'Пожалуйста, исправьте ошибки в форме';
+
 /* формируем боковое меню */
 $content_side = include_template('content_side_unregistered.php');
 
@@ -20,23 +25,23 @@ $con = mysqli_connect($db['host'], $db['user'], $db['password'], $db['database']
 if ($con) {
     mysqli_set_charset($con, 'utf8');
 
-    $content = include_template('register.php');
+    $content = include_template('auth.php');
 
 /* при попытке отправки формы */
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-/* валидация полученных данных */
-        $required = ['email', 'password', 'name'];
+/* валидация*/
+        $required = ['email', 'password'];
         $errors = [];
 
         $rules = [
             'email' => function($email) use ($con) {
-                return checking_email($email, $con, true);
+                return checking_email($email, $con, false);
             }
         ];
 
-        $user = filter_input_array(INPUT_POST, ['email' => FILTER_DEFAULT, 'password' => FILTER_DEFAULT, 'name' => FILTER_DEFAULT], true);
+        $likely_user = filter_input_array(INPUT_POST, ['email' => FILTER_DEFAULT, 'password' => FILTER_DEFAULT], true);
 
-        foreach ($user as $key => $value) {
+        foreach ($likely_user as $key => $value) {
             if (isset($rules[$key])) {
                 $rule = $rules[$key];
                 $errors[$key] = $rule($value);
@@ -45,32 +50,35 @@ if ($con) {
                 if (in_array($key, $required)) {
                     $errors[$key] = 'Это поле должно быть заполнено';
                 }
-                $user[$key] = NULL;
+                $likely_user[$key] = NULL;
             }
         }
 
         $errors = array_filter($errors);
-/* сохраняем пользователя либо показываем ошибки */
-        if (!count($errors)) {
-            $user['password'] = password_hash($user['password'], PASSWORD_DEFAULT);
-            $sql_user_insert = 'INSERT INTO users (email, password, name) VALUES (?, ?, ?)';
-            $stmt = db_get_prepare_stmt($con, $sql_user_insert, $user);
-            $result = mysqli_stmt_execute($stmt);
 
-            if ($result) {
+/* проверяем пароль */
+        if (!count($errors)) {
+            $mail = $likely_user['email'];
+            $user = get_user($mail, $con);
+
+            if (password_verify($likely_user['password'], $user['password'])) {
+/* здесь должна быть запись в сессию */
                 if(session_status() !== PHP_SESSION_ACTIVE) {
                     session_start();
                 }
-                $_SESSION['user'] = get_user($user['email'], $con);
+                $_SESSION['user'] = $user;
                 header('Location: index.php');
+            } else {
+                $form_error_message = 'Вы ввели неверный email/пароль';
+                $errors['password'] = 'Это поле должно быть заполнено';
             }
-        } else {
-            $user['password'] = '';
-            $content = include_template('register.php', ['user' => $user, 'errors' => $errors]);
         }
+        $likely_user['password'] = '';
+        $content = include_template('auth.php', ['likely_user' => $likely_user, 'errors' => $errors, 'form_error_message' => $form_error_message]);
 
+
+/* вывод ошибки либо открытие сессии и переадресация на главную или куда хотел */
     }
-
     print(include_template('../index.php', ['db' => $db, 'content_side' => $content_side, 'content' => $content, 'user' => $user]));
 }
 ?>
