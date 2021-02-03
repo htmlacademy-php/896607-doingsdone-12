@@ -6,10 +6,10 @@ VALUES ('Входящие', 1),
        ('Домашние дела', 1),
        ('Авто', 1);
 
-/* добавляем несколько пользователей */
+/* добавляем несколько пользователей
 INSERT INTO users (email, name, password)
 VALUES ('first@mail.ru', 'Anna', 'secret'),
-       ('second@mail.ru', 'Elena', 'supersecret');
+       ('second@mail.ru', 'Elena', 'supersecret'); */
 
 /* добавляем существущий список задач */
 INSERT INTO tasks (is_done, title, deadline, project_id, user_id)

@@ -3,9 +3,14 @@ $categories = [];
 
 require_once('helpers.php');
 
-/* пользователь №1 для примера */
-if (!isset($user_id)) {
-    $user_id = 1;
+/* проверяем сессию, анонимного пользователя переадресуем на вход */
+/* по-хорошму надо сохранить ссылку и вернуть потом сюда же */
+session_start();
+if (isset($_SESSION['user'])) {
+$user = $_SESSION['user'];
+$user_id = $user['id'];
+} else {
+    header('Location: index.php');
 }
 
 /* подключаемся к базе данных */
