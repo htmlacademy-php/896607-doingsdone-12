@@ -1,6 +1,7 @@
 <?php
 $show_complete_tasks = rand(0, 1);
 $title = 'Дела в порядке';
+$checking_result = 0;
 /* проверяем сессию */
 if(session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
@@ -21,7 +22,7 @@ if ($user) {
     if (isset($_GET['category'])) {
         $category = $_GET['category'];
     } else {
-        $category = '';
+        $category = NULL;
     }
 
 /* получаем данные из базы */
@@ -48,7 +49,7 @@ if ($user) {
         $projects = mysqli_fetch_all($result, MYSQLI_ASSOC);
 /* перезаписываем задачи пользователя с учетом параметра запроса */
         $sql_tasks = "SELECT t.title, DATE_FORMAT(deadline, '%d.%m.%Y') AS deadline, p.title AS category, is_done, file_url, file_name FROM tasks t JOIN projects p ON t.project_id = p.id AND t.user_id = $user_id";
-        if ($category) {
+        if (isset($category)) {
            $checking_result = checking_id_in_projects($con, $category, $user_id);
            if ($checking_result) {
               $sql_tasks = $sql_tasks . " AND t.project_id = $category";
@@ -64,8 +65,6 @@ if ($user) {
                 $content = include_template('main.php', ['tasks' => $tasks, 'show_complete_tasks' => $show_complete_tasks]);
             }
             $content_side = include_template('navigation.php', ['projects' => $projects, 'category' => $category]);
-        } else {
-            return_error(404);
         }
     }
 } else {
@@ -79,8 +78,12 @@ if ($user) {
 }
 
 /* создаем страницу */
-$page = include_template('layout.php', ['title' => $title, 'user' => $user, 'content' => $content, 'content_side' => $content_side]);
+if (!$user || $checking_result) {
+    $page = include_template('layout.php', ['title' => $title, 'user' => $user, 'content' => $content, 'content_side' => $content_side]);
 
-print($page);
+    print($page);
+} else {
+    return_error(404);
+}
 
 ?>
