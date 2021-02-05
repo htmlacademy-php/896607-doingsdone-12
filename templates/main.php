@@ -1,8 +1,8 @@
 <main class="content__main">
     <h2 class="content__main-heading">Список задач</h2>
 
-    <form class="search-form" action="index.php" method="post" autocomplete="off">
-        <input class="search-form__input" type="text" name="" value="" placeholder="Поиск по задачам">
+    <form class="search-form" action="index.php" method="get" autocomplete="off">
+        <input class="search-form__input" type="text" name="search" value="<?php if ($search): ?><?=$search;?><? endif; ?>" placeholder="Поиск по задачам">
 
         <input class="search-form__submit" type="submit" name="" value="Искать">
     </form>
@@ -39,6 +39,14 @@
                 <td class="task__controls"></td>
             </tr>
         <?php endforeach; ?>
+    <?php else: ?>
+        <?php if ($search): ?>
+            <tr class="tasks__item task">
+                <td>
+                    Ничего не найдено по вашему запросу
+                </td>
+            </tr>
+        <?php endif; ?>
     <?php endif; ?>
     </table>
 </main>

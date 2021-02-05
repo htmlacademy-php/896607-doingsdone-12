@@ -24,4 +24,5 @@ CREATE TABLE tasks (
   project_id INT
 );
 CREATE INDEX u_mail ON users(email);
-CREATE INDEX t_text ON tasks(title);
+
+CREATE FULLTEXT INDEX task_ft_search ON tasks(title);

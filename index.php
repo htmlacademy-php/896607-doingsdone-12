@@ -2,6 +2,7 @@
 $show_complete_tasks = rand(0, 1);
 $title = 'Дела в порядке';
 $checking_result = 0;
+
 /* проверяем сессию */
 if(session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
@@ -17,12 +18,18 @@ require_once('helpers.php');
 /* формируем страницу для авторизованного пользователя */
 if ($user) {
     $user_id = $user['id'];
+    $search = '';
 
 /* определяем выбранный проект */
     if (isset($_GET['category'])) {
         $category = $_GET['category'];
     } else {
         $category = NULL;
+    }
+
+/* получаем параметры поиска */
+    if (isset($_GET['search'])) {
+        $search = trim($_GET['search'], " ");
     }
 
 /* получаем данные из базы */
@@ -57,12 +64,18 @@ if ($user) {
         } else {
             $checking_result = 1;
         }
+/* добавляем условие поиска, если оно задано */
+        if ($search) {
+            $search = mysqli_real_escape_string($con, $search);
+            $sql_tasks = $sql_tasks . " AND MATCH t.title AGAINST ('$search')";
+        }
+
         $result = mysqli_query($con, $sql_tasks);
         $tasks = mysqli_fetch_all($result, MYSQLI_ASSOC);
 /* создаем контент для пользователя */
         if ($checking_result) {
             if (!isset($content)) {
-                $content = include_template('main.php', ['tasks' => $tasks, 'show_complete_tasks' => $show_complete_tasks]);
+                $content = include_template('main.php', ['tasks' => $tasks, 'show_complete_tasks' => $show_complete_tasks, 'search' => $search]);
             }
             $content_side = include_template('navigation.php', ['projects' => $projects, 'category' => $category]);
         }
