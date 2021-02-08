@@ -163,7 +163,7 @@ function task_urgency($task) {
 
 /* проверяем наличие выбранного проекта из параметров запроса */
 function checking_id_in_projects($connect, $id_number, $user_id) {
-    if (preg_match('/\d{1,}$/', $id_number)) {
+    if (filter_var($id_number, FILTER_VALIDATE_INT)) {
         $sql_id_checking = "SELECT id FROM projects WHERE id = $id_number AND user_id = $user_id";
         $search_result = mysqli_query($connect, $sql_id_checking);
         return mysqli_num_rows($search_result) > 0;
