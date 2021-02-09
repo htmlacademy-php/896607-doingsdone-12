@@ -85,10 +85,8 @@ if ($con) {
             $content = include_template('add.php', ['task' => $task, 'errors' => $errors, 'categories' => $categories]);
         }
     }
-/* временно, пока не сделали нормальный вход на сайт */
-    $is_user = true;
 
-    print(include_template('../index.php', ['db' => $db,'content' => $content, 'is_user' => $is_user]));
+    print(include_template('../index.php', ['db' => $db,'content' => $content]));
 
 }
 ?>

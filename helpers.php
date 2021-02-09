@@ -194,7 +194,7 @@ function checking_date($date) {
     if (is_date_valid($date) && $cur_date <= $deadline_date) {
         return NULL;
     }
-    return 'Дата указывается в формате ГГГГ-ММ-ДД и не может быть позже текущей даты';
+    return 'Дата указывается в формате ГГГГ-ММ-ДД и не может быть раньше текущей даты';
 }
 
 /* проверяем наличие выбранного проекта при добавлении задачи */
@@ -203,6 +203,15 @@ function checking_project($number, $projects) {
         return NULL;
     };
     return 'Не найдено указанного проекта';
+}
+
+/* для добавления проекта */
+/* проверяем название проекта */
+function checking_new_project($project, $connect, $user_id) {
+    if (!checking_uniqe_value($connect, 'projects', 'title', $project, "user_id = $user_id")) {
+        return 'Проект с таким названием уже существует';
+    }
+        return NULL;
 }
 
 /* для регистрации пользователя */
