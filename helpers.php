@@ -152,11 +152,25 @@ function return_error($error_code) {
 }
 
 /* определяем срочность задачи */
-function task_urgency($task) {
-    if ($task['deadline']) {
-        $cur_date = date_create('now');
-        $deadline_date = date_create($task['deadline']);
-        if ($deadline_date <= $cur_date) {return true;}
+function task_urgency($deadline) {
+    $cur_date = date_format(date_create('now'), "Y-m-d");
+    $deadline_date = date_format(date_create($deadline), "Y-m-d");
+    if ($deadline) {
+        return $deadline_date < $cur_date;
+    }
+    return false;
+}
+
+/* фильтр по срочности */
+function filter_deadline($deadline, $day) {
+    if ($day === 'overdue') {
+        return task_urgency($deadline);
+    } else {
+        $filter_date = date_format(date_create($day), "Y-m-d");
+        $deadline_date = date_format(date_create($deadline), "Y-m-d");
+        if ($deadline) {
+            return $filter_date === $deadline_date;
+        }
     }
     return false;
 }
@@ -189,9 +203,7 @@ function checking_date($date) {
     if (!$date) {
         return NULL;
     }
-    $cur_date = date_create('now');
-    $deadline_date = date_create($date);
-    if (is_date_valid($date) && $cur_date <= $deadline_date) {
+    if (is_date_valid($date) && !task_urgency($date)) {
         return NULL;
     }
     return 'Дата указывается в формате ГГГГ-ММ-ДД и не может быть раньше текущей даты';
@@ -237,4 +249,61 @@ function get_user($email, $connect) {
     $sql_user_search = "SELECT * FROM users WHERE email = '$email'";
     $search_result = mysqli_query($connect, $sql_user_search);
     return mysqli_fetch_assoc($search_result);
+}
+
+/* функции для сохранения текущего представления */
+function remember($name, $value) {
+    if(session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
+    }
+    $_SESSION[$name] = $value;
+}
+
+function keep_view() {
+    $view = '';
+    if(session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
+    }
+    $category = $_SESSION['category'];
+    $filter = $_SESSION['filter'];
+    if ($category) {
+        $view = "?category=$category";
+    }
+    if ($filter) {
+        if ($view) {
+            $view = $view . "&filter=$filter";
+        } else {
+            $view = "?filter=$filter";
+        }
+    }
+
+    header("Location: index.php$view");
+}
+
+/* функция для изменения статуса задачи (выполнена / не выполнена) */
+function invert_task_status($id, $new_status, $user_id, $connect) {
+    mysqli_query($connect, "START TRANSACTION");
+
+    $result1 = mysqli_query($connect, "SELECT * FROM tasks WHERE id = $id AND user_id = $user_id");
+    $task_status = mysqli_fetch_assoc($result1)['is_done'];
+
+    if ($task_status !== $new_status) {
+        $sql_task_change = "UPDATE tasks SET is_done = $new_status WHERE id = $id";
+        $result2 = mysqli_query($connect, $sql_task_change);
+    }
+
+    if ($result1 && $result2) {
+      mysqli_query($connect, "COMMIT");
+    }
+    else {
+      mysqli_query($connect, "ROLLBACK");
+    }
+    header('Location: index.php');
+}
+
+/* функция для изменения режима показа выполненных задач */
+function invert_show_completed() {
+    $show_complete_tasks = filter_input(INPUT_GET, 'show_completed', FILTER_SANITIZE_NUMBER_INT);
+    remember('show_completed', $show_complete_tasks);
+    keep_view();
 }

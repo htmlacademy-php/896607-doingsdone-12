@@ -4,7 +4,6 @@ $categories = [];
 require_once('helpers.php');
 
 /* проверяем сессию, анонимного пользователя переадресуем на вход */
-/* по-хорошму надо сохранить ссылку и вернуть потом сюда же */
 session_start();
 if (isset($_SESSION['user'])) {
 $user = $_SESSION['user'];

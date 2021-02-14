@@ -16,9 +16,10 @@ if ($checkbox.length) {
 var $taskCheckboxes = document.getElementsByClassName('tasks');
 
 if ($taskCheckboxes.length) {
-
   $taskCheckboxes[0].addEventListener('change', function (event) {
-    if (event.target.classList.contains('task__checkbox')) {
+console.log(event.target);
+
+    if (event.target.classList.contains('checkbox__input')) {
       var el = event.target;
 
       var is_checked = +el.checked;
