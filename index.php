@@ -1,7 +1,8 @@
 <?php
-$show_complete_tasks = rand(0, 1);
+require_once('helpers.php');
 $title = 'Дела в порядке';
 $checking_result = 0;
+$date_filters = ['today', 'tomorrow', 'overdue'];
 
 /* проверяем сессию */
 if(session_status() !== PHP_SESSION_ACTIVE) {
@@ -9,11 +10,14 @@ if(session_status() !== PHP_SESSION_ACTIVE) {
 }
 if (isset($_SESSION['user'])) {
     $user = $_SESSION['user'];
+    if (isset($_SESSION['show_completed'])) {
+        $show_complete_tasks = (int)$_SESSION['show_completed'];
+    } else {
+        $show_complete_tasks = 0;
+    }
 } else {
     $user = [];
 }
-
-require_once('helpers.php');
 
 /* формируем страницу для авторизованного пользователя */
 if ($user) {
@@ -26,11 +30,20 @@ if ($user) {
     } else {
         $category = NULL;
     }
+    remember('category', $category);
 
 /* получаем параметры поиска */
     if (isset($_GET['search'])) {
         $search = trim($_GET['search'], " ");
     }
+
+/* проверяем наличие фильтров по сроку */
+    if (isset($_GET['filter']) && in_array($_GET['filter'], $date_filters)) {
+        $filter = $_GET['filter'];
+    } else {
+        $filter = NULL;
+    }
+    remember('filter', $filter);
 
 /* получаем данные из базы */
     if (!isset($db)) {
@@ -41,6 +54,17 @@ if ($user) {
 
     if ($con) {
         mysqli_set_charset($con, 'utf8');
+
+/* при изменении статуса задачи */
+    if (isset($_GET['task_id']) && isset($_GET['check'])) {
+        $task_id = filter_input(INPUT_GET, 'task_id', FILTER_SANITIZE_NUMBER_INT);
+        $new_status = filter_input(INPUT_GET, 'check', FILTER_SANITIZE_NUMBER_INT);
+        invert_task_status($task_id, $new_status, $user['id'], $con);
+    }
+
+    if (isset($_GET['show_completed'])) {
+        invert_show_completed();
+    }
 
 /* перезаписываем проекты пользователя */
     /* запрос можно упростить, когда будет уверенность, что у всех задач правильные user_id */
@@ -55,7 +79,7 @@ if ($user) {
         $result = mysqli_query($con, $sql_projects);
         $projects = mysqli_fetch_all($result, MYSQLI_ASSOC);
 /* перезаписываем задачи пользователя с учетом параметра запроса */
-        $sql_tasks = "SELECT t.title, DATE_FORMAT(deadline, '%d.%m.%Y') AS deadline, p.title AS category, is_done, file_url, file_name FROM tasks t JOIN projects p ON t.project_id = p.id AND t.user_id = $user_id";
+        $sql_tasks = "SELECT t.title, DATE_FORMAT(deadline, '%d.%m.%Y') AS deadline, p.title AS category, is_done, file_url, file_name, t.id FROM tasks t JOIN projects p ON t.project_id = p.id AND t.user_id = $user_id";
         if (isset($category)) {
            $checking_result = checking_id_in_projects($con, $category, $user_id);
            if ($checking_result) {
@@ -75,7 +99,7 @@ if ($user) {
 /* создаем контент для пользователя */
         if ($checking_result) {
             if (!isset($content)) {
-                $content = include_template('main.php', ['tasks' => $tasks, 'show_complete_tasks' => $show_complete_tasks, 'search' => $search]);
+                $content = include_template('main.php', ['tasks' => $tasks, 'show_complete_tasks' => $show_complete_tasks, 'search' => $search, 'filter' => $filter, 'category' => $category]);
             }
             $content_side = include_template('navigation.php', ['projects' => $projects, 'category' => $category]);
         }
@@ -98,5 +122,4 @@ if (!$user || $checking_result) {
 } else {
     return_error(404);
 }
-
 ?>

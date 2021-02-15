@@ -4,7 +4,6 @@ $categories = [];
 require_once('helpers.php');
 
 /* проверяем сессию, анонимного пользователя переадресуем на вход */
-/* по-хорошму надо сохранить ссылку и вернуть потом сюда же */
 session_start();
 if (isset($_SESSION['user'])) {
 $user = $_SESSION['user'];
@@ -85,10 +84,8 @@ if ($con) {
             $content = include_template('add.php', ['task' => $task, 'errors' => $errors, 'categories' => $categories]);
         }
     }
-/* временно, пока не сделали нормальный вход на сайт */
-    $is_user = true;
 
-    print(include_template('../index.php', ['db' => $db,'content' => $content, 'is_user' => $is_user]));
+    print(include_template('../index.php', ['db' => $db,'content' => $content]));
 
 }
 ?>
