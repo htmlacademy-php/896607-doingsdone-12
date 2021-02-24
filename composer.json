@@ -1,0 +1,12 @@
+{
+    "name": "plady/doingsdone",
+    "authors": [
+        {
+            "name": "Polina",
+            "email": "pladygina@gmail.com"
+        }
+    ],
+    "require": {
+        "swiftmailer/swiftmailer": "^6.2"
+    }
+}
