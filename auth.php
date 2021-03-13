@@ -1,5 +1,6 @@
 <?php
 require_once('helpers.php');
+require_once('functions.php');
 
 if(session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
@@ -16,11 +17,9 @@ $form_error_message = 'Пожалуйста, исправьте ошибки в 
 $content_side = include_template('content_side_unregistered.php');
 
 /* подключаемся к базе данных */
-if (!isset($db)) {
-    $db = require_once('config/db.php');
+if (!isset($con)) {
+    $con = require_once('init.php');
 }
-
-$con = mysqli_connect($db['host'], $db['user'], $db['password'], $db['database']);
 
 if ($con) {
     mysqli_set_charset($con, 'utf8');
@@ -62,7 +61,7 @@ if ($con) {
             $user = get_user($mail, $con);
 
             if (password_verify($likely_user['password'], $user['password'])) {
-/* здесь должна быть запись в сессию */
+/* записываем в сессию */
                 if(session_status() !== PHP_SESSION_ACTIVE) {
                     session_start();
                 }
@@ -77,8 +76,8 @@ if ($con) {
         $content = include_template('auth.php', ['likely_user' => $likely_user, 'errors' => $errors, 'form_error_message' => $form_error_message]);
 
 
-/* вывод ошибки либо открытие сессии и переадресация на главную или куда хотел */
+/* вывод ошибки */
     }
-    print(include_template('../index.php', ['db' => $db, 'content_side' => $content_side, 'content' => $content, 'user' => $user]));
+    print(include_template('../index.php', ['con' => $con, 'content_side' => $content_side, 'content' => $content, 'user' => $user]));
 }
 ?>

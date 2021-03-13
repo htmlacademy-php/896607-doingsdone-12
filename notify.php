@@ -1,12 +1,7 @@
 <?php
 require_once('vendor/autoload.php');
-require_once('helpers.php');
 
-if (!isset($db)) {
-    $db = require_once('config/db.php');
-}
-
-$con = mysqli_connect($db['host'], $db['user'], $db['password'], $db['database']);
+$con = require_once('init.php');
 
 if ($con) {
     mysqli_set_charset($con, 'utf8');
@@ -48,7 +43,7 @@ if ($con) {
         array_push($letters, $letter);
     }
 
-/*    отправляем сообщения */
+/* отправляем сообщения */
     $success_mail_count = 0;
     $error_mail_count = 0;
 

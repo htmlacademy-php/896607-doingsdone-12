@@ -1,8 +1,8 @@
 <?php
 require_once('helpers.php');
+require_once('functions.php');
 
 /* проверяем сессию, анонимного пользователя переадресуем на вход */
-/* по-хорошму надо сохранить ссылку и вернуть потом сюда же */
 session_start();
 if (isset($_SESSION['user'])) {
 $user = $_SESSION['user'];
@@ -12,11 +12,9 @@ $user_id = $user['id'];
 }
 
 /* подключаемся к базе данных */
-if (!isset($db)) {
-    $db = require_once('config/db.php');
+if (!isset($con)) {
+    $con = require_once('init.php');
 }
-
-$con = mysqli_connect($db['host'], $db['user'], $db['password'], $db['database']);
 
 if ($con) {
     mysqli_set_charset($con, 'utf8');
@@ -67,7 +65,7 @@ if ($con) {
             $content = include_template('add-project.php', ['new_project' => $new_project, 'errors' => $errors]);
         }
     }
-    print(include_template('../index.php', ['db' => $db,'content' => $content]));
+    print(include_template('../index.php', ['con' => $con,'content' => $content]));
 
 }
 ?>

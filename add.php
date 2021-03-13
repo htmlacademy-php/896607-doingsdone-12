@@ -2,6 +2,7 @@
 $categories = [];
 
 require_once('helpers.php');
+require_once('functions.php');
 
 /* проверяем сессию, анонимного пользователя переадресуем на вход */
 session_start();
@@ -13,11 +14,9 @@ $user_id = $user['id'];
 }
 
 /* подключаемся к базе данных */
-if (!isset($db)) {
-    $db = require_once('config/db.php');
+if (!isset($con)) {
+    $con = require_once('init.php');
 }
-
-$con = mysqli_connect($db['host'], $db['user'], $db['password'], $db['database']);
 
 if ($con) {
     mysqli_set_charset($con, 'utf8');
@@ -85,7 +84,7 @@ if ($con) {
         }
     }
 
-    print(include_template('../index.php', ['db' => $db,'content' => $content]));
+    print(include_template('../index.php', ['con' => $con,'content' => $content]));
 
 }
 ?>

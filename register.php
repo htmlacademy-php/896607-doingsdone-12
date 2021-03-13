@@ -1,5 +1,6 @@
 <?php
 require_once('helpers.php');
+require_once('functions.php');
 
 session_start();
 if (isset($_SESSION['user'])) {
@@ -11,11 +12,9 @@ if (isset($_SESSION['user'])) {
 $content_side = include_template('content_side_unregistered.php');
 
 /* подключаемся к базе данных */
-if (!isset($db)) {
-    $db = require_once('config/db.php');
+if (!isset($con)) {
+    $con = require_once('init.php');
 }
-
-$con = mysqli_connect($db['host'], $db['user'], $db['password'], $db['database']);
 
 if ($con) {
     mysqli_set_charset($con, 'utf8');
@@ -71,6 +70,6 @@ if ($con) {
 
     }
 
-    print(include_template('../index.php', ['db' => $db, 'content_side' => $content_side, 'content' => $content, 'user' => $user]));
+    print(include_template('../index.php', ['con' => $con, 'content_side' => $content_side, 'content' => $content, 'user' => $user]));
 }
 ?>
