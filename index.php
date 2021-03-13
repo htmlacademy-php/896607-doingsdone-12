@@ -1,5 +1,6 @@
 <?php
 require_once('helpers.php');
+require_once('functions.php');
 $title = 'Дела в порядке';
 $checking_result = 0;
 $date_filters = ['today', 'tomorrow', 'overdue'];
@@ -46,28 +47,25 @@ if ($user) {
     remember('filter', $filter);
 
 /* получаем данные из базы */
-    if (!isset($db)) {
-        $db = require_once('config/db.php');
+    if (!isset($con)) {
+        $con = require_once('init.php');
     }
-
-    $con = mysqli_connect($db['host'], $db['user'], $db['password'], $db['database']);
 
     if ($con) {
         mysqli_set_charset($con, 'utf8');
 
 /* при изменении статуса задачи */
-    if (isset($_GET['task_id']) && isset($_GET['check'])) {
-        $task_id = filter_input(INPUT_GET, 'task_id', FILTER_SANITIZE_NUMBER_INT);
-        $new_status = filter_input(INPUT_GET, 'check', FILTER_SANITIZE_NUMBER_INT);
-        invert_task_status($task_id, $new_status, $user['id'], $con);
-    }
+        if (isset($_GET['task_id']) && isset($_GET['check'])) {
+            $task_id = filter_input(INPUT_GET, 'task_id', FILTER_SANITIZE_NUMBER_INT);
+            $new_status = filter_input(INPUT_GET, 'check', FILTER_SANITIZE_NUMBER_INT);
+            invert_task_status($task_id, $new_status, $user['id'], $con);
+        }
 
-    if (isset($_GET['show_completed'])) {
-        invert_show_completed();
-    }
+        if (isset($_GET['show_completed'])) {
+            invert_show_completed();
+        }
 
 /* перезаписываем проекты пользователя */
-    /* запрос можно упростить, когда будет уверенность, что у всех задач правильные user_id */
         $sql_projects = "SELECT p.id, p.title, p.user_id, task_count
                            FROM projects p
                            LEFT JOIN
