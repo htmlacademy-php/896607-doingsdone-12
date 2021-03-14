@@ -1,13 +1,15 @@
 <?php
 require_once('helpers.php');
 require_once('functions.php');
+$user = [];
 
-session_start();
+if(session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
 if (isset($_SESSION['user'])) {
     header('Location: index.php');
-} else {
-    $user = [];
 }
+
 /* формируем боковое меню */
 $content_side = include_template('content_side_unregistered.php');
 
@@ -57,11 +59,12 @@ if ($con) {
             $result = mysqli_stmt_execute($stmt);
 
             if ($result) {
-                if(session_status() !== PHP_SESSION_ACTIVE) {
-                    session_start();
+                if(session_status() === PHP_SESSION_ACTIVE) {
+                    $_SESSION['user'] = get_user($user['email'], $con);
+                    header('Location: index.php');
+                } else {
+                    header('Location: auth.php');
                 }
-                $_SESSION['user'] = get_user($user['email'], $con);
-                header('Location: index.php');
             }
         } else {
             $user['password'] = '';

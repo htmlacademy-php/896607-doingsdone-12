@@ -2,34 +2,35 @@
 require_once('helpers.php');
 require_once('functions.php');
 $title = 'Дела в порядке';
-$checking_result = 0;
 $date_filters = ['today', 'tomorrow', 'overdue'];
 
-/* проверяем сессию */
-if(session_status() !== PHP_SESSION_ACTIVE) {
+$user = [];
+$checking_result = 0;
+$tasks = [];
+$show_complete_tasks = 0;
+$search = '';
+$filter = NULL;
+$category = NULL;
+
+/* если сценарий вызывается не с готовым контентом, запускаем сессию */
+if(!isset($content) && session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
+/* проверяем наличие данных о пользователе в сессии */
 if (isset($_SESSION['user'])) {
     $user = $_SESSION['user'];
     if (isset($_SESSION['show_completed'])) {
         $show_complete_tasks = (int)$_SESSION['show_completed'];
-    } else {
-        $show_complete_tasks = 0;
     }
-} else {
-    $user = [];
 }
 
 /* формируем страницу для авторизованного пользователя */
 if ($user) {
     $user_id = $user['id'];
-    $search = '';
 
 /* определяем выбранный проект */
     if (isset($_GET['category'])) {
         $category = $_GET['category'];
-    } else {
-        $category = NULL;
     }
     remember('category', $category);
 
@@ -41,8 +42,6 @@ if ($user) {
 /* проверяем наличие фильтров по сроку */
     if (isset($_GET['filter']) && in_array($_GET['filter'], $date_filters)) {
         $filter = $_GET['filter'];
-    } else {
-        $filter = NULL;
     }
     remember('filter', $filter);
 
@@ -102,14 +101,14 @@ if ($user) {
             $content_side = include_template('navigation.php', ['projects' => $projects, 'category' => $category]);
         }
     }
-} else {
+}
+
 /* создаем контент для анонимного пользователя */
-    if (!isset($content)) {
-        $content = include_template('guest.php');
-    }
-    if (!isset($content_side)) {
-        $content_side = NULL;
-    }
+if (!isset($content)) {
+    $content = include_template('guest.php');
+}
+if (!isset($content_side)) {
+    $content_side = NULL;
 }
 
 /* создаем страницу */

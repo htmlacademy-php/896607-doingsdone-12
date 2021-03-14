@@ -1,9 +1,12 @@
 <?php
 require_once('helpers.php');
 require_once('functions.php');
+$user_id = '';
 
 /* проверяем сессию, анонимного пользователя переадресуем на вход */
-session_start();
+if(session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
 if (isset($_SESSION['user'])) {
 $user = $_SESSION['user'];
 $user_id = $user['id'];
