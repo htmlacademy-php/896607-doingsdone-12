@@ -1,17 +1,15 @@
 <?php
 require_once('helpers.php');
 require_once('functions.php');
+$user = [];
+$form_error_message = 'Пожалуйста, исправьте ошибки в форме';
 
 if(session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 if (isset($_SESSION['user'])) {
     header('Location: index.php');
-} else {
-    $user = [];
 }
-
-$form_error_message = 'Пожалуйста, исправьте ошибки в форме';
 
 /* формируем боковое меню */
 $content_side = include_template('content_side_unregistered.php');
@@ -60,13 +58,14 @@ if ($con) {
             $mail = $likely_user['email'];
             $user = get_user($mail, $con);
 
-            if (password_verify($likely_user['password'], $user['password'])) {
+            if ($user && password_verify($likely_user['password'], $user['password'])) {
 /* записываем в сессию */
-                if(session_status() !== PHP_SESSION_ACTIVE) {
-                    session_start();
+                if(session_status() === PHP_SESSION_ACTIVE) {
+                    $_SESSION['user'] = $user;
+                    header('Location: index.php');
+                } else {
+                    header('Location: auth.php');
                 }
-                $_SESSION['user'] = $user;
-                header('Location: index.php');
             } else {
                 $form_error_message = 'Вы ввели неверный email/пароль';
                 $errors['password'] = 'Это поле должно быть заполнено';
@@ -75,9 +74,9 @@ if ($con) {
         $likely_user['password'] = '';
         $content = include_template('auth.php', ['likely_user' => $likely_user, 'errors' => $errors, 'form_error_message' => $form_error_message]);
 
+    }
 
 /* вывод ошибки */
-    }
     print(include_template('../index.php', ['con' => $con, 'content_side' => $content_side, 'content' => $content, 'user' => $user]));
 }
 ?>
